@@ -9,6 +9,14 @@ module Helium
         private :new
       end
 
+      def to_s
+        "`undefined`"
+      end
+
+      def inspect
+        to_s
+      end
+
       if defined? Helium::Console
         Helium::Console.define_formatter_for self do
           def call

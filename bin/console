@@ -12,7 +12,13 @@ require "helium/struct"
 class MyStruct
   include Helium::Struct
 
-  attribute :name
+  attribute :name do
+    change { |is, was| puts "Name changed from #{was.inspect} to #{is.inspect}" }
+  end
+
+  attribute :name_caps do
+
+  end
 end
 
 Pry.start

@@ -1,5 +1,6 @@
 require "helium/struct/undefined"
 require "helium/struct/attribute"
+require "helium/struct/attribute_builder"
 
 module Helium
   module Struct
@@ -8,22 +9,24 @@ module Helium
         mod.singleton_class.include(ClassMethods)
       end
 
-      def self.defaults
-        {
-          default: Undefined.instance
-        }
+      def undefined?(attr_name)
+        @attributes[attr_name].undefined?
       end
 
       def defined?(attr_name)
-        !@attributes[attr_name].value.instance_of? Undefined
+        !undefined?(attr_name)
+      end
+
+      def delete(attr_name)
+        @attributes[attr_name].clear!
       end
 
     private
 
       def build_attributes
         @attributes = {}
-        self.class.schema.each do |key, options|
-          @attributes[key] = Attribute.new(**options)
+        self.class.schema.each do |key, attribute|
+          @attributes[key] = attribute.build_value
         end
       end
 
@@ -32,12 +35,16 @@ module Helium
           schema.keys
         end
 
-        def attribute(name, **opts)
-          schema[name] = Attributes.defaults.merge(opts)
+        def attribute(name, **opts, &block)
+          schema[name] = Attribute.new(**opts)
+
+          if block
+            builder = AttributeBuilder.new(schema[name])
+            builder.instance_exec(&block)
+          end
 
           define_method name do
-            value = @attributes[name].value
-            value unless value.instance_of? Undefined
+            @attributes[name].value
           end
 
           define_method "#{name}=" do |value|
