@@ -1,10 +1,8 @@
 # Helium::Struct
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/helium/struct`. To experiment with that code, run `bin/console` for an interactive prompt.
+Basic but powerful and extensible data struct for ruby.
 
-TODO: Delete this and the text above, and describe your gem
-
-## Installation
+## Installatio
 
 Add this line to your application's Gemfile:
 
@@ -22,7 +20,107 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+To create your first Struct simply include `Helium::Struct` and define attributes:
+
+```
+class User
+  include Helium::Struct
+
+  attribute :name
+  attribute :email
+end
+
+user = User.new
+user.name = "Stan Klajn"
+user.name #=> "Stan Klajn"
+```
+
+### Undefined values
+
+Structs make a distinction between `undefined` and `nil` values.
+
+```
+u = User.new
+#=>
+# # User struct
+# |  name: undefined
+# | email: undefined
+```
+
+However, due to Ruby's limitation, `undefine` can only be internal implementation detail as it would be treated as true in all the conditionals. Struct will still return nil when you query an udnefined value:
+
+```
+u.name #=> nil
+```
+
+You can however test if given attribute is defined with:
+```
+u.defined?(:name) #=> false
+u.name = nil
+u.defined?(:name) #=> true
+u.delete(:name)
+u.defined?(:name) #=> false
+```
+
+### Hooks
+
+Do not override your struct setters - use change hooks instead!
+
+```
+class Mentorship
+  include Helium::Struct
+
+  attribute :mentor_id
+  attribute :mentor
+
+  on_change(:mentor_id) { |value| self.mentor = value && Mentor.find(value) }
+  on_change(:mentor) { |value| self.mentor_id = value&.id }
+end
+
+m = Mentorship.new
+m.mentor_id = 1
+m.mentor #=> Mentor(id: 1)
+
+```
+
+### Composability
+
+You can compose one struct within another struct using `use` method. Composition maintains all the defined hooks which executes in the context of the original struct without copying any methods over. You can also provide optional `as:` keyword which will grant you access to the underlying struct.
+
+```
+class SimpleProfile
+  include Helium::Struct
+
+  attribute :username
+  attribute :email
+
+  on_change(:email) { |value| self.username = generate_username(value) }
+
+  private
+
+  def generate_username(value)
+    ...
+  end
+end
+
+class FullUser
+  include Helium::Struct
+
+  use User, as: :simple_user
+  use SimpleProfile
+end
+
+fu = FullUser.new
+
+fu.email = 'stan@klajn.com'
+fu.username #=> <generated-username>
+
+fu.simple_user
+#=>
+# # User struct
+# | name: undefined
+# | email: "stan@klajn.com"
+```
 
 ## Development
 
