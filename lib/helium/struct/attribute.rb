@@ -18,8 +18,12 @@ module Helium
         @opts[:initial] || default
       end
 
-      def build_value
-        Value.new(self)
+      def build_value(form)
+        value = Value.new(self)
+        @hooks.each do |type, hooks|
+          hooks.each {|hook| value.register_hook(type, form, &hook) }
+        end
+        value
       end
 
       def register_hook(name, &block)
@@ -32,14 +36,15 @@ module Helium
         def initialize(attribute)
           @attribute = attribute
           @value = attribute.initial_value
+          @hooks = Hash.new {|h,k| h[k] = [] }
         end
 
         def undefined?
           @value.is_a? Undefined
         end
 
-        def valuee
-          return attribute.default if undefined?
+        def value
+          return @attribute.default if undefined?
           @value
         end
 
@@ -47,13 +52,17 @@ module Helium
           self.value = Undefined.instance
         end
 
+        def register_hook(type, struct_instance, &block)
+          @hooks[type] << [struct_instance, block]
+        end
+
         def value=(new_value)
           old_value = @value
           @value = new_value
 
           if old_value != new_value
-            @attribute.hooks[:change].each do |hook|
-              hook.call(new_value, old_value)
+            @hooks[:change].each do |instance, hook|
+              instance.instance_exec(new_value, old_value, &hook)
             end
           end
         end

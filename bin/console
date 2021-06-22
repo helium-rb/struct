@@ -9,16 +9,26 @@ require "helium/struct"
 # with your gem easier. You can also use a different console, if you like.
 
 # (If you use this, don't forget to add pry to your Gemfile!)
-class MyStruct
+class NameStruct
   include Helium::Struct
 
-  attribute :name do
-    change { |is, was| puts "Name changed from #{was.inspect} to #{is.inspect}" }
+  attribute :name
+  attribute :name_caps
+
+  on_change(:name) do |value|
+    self.name_caps = value&.upcase
   end
 
-  attribute :name_caps do
-
+  on_change(:name_caps) do |value|
+    self.name = value&.downcase
   end
+end
+
+class UserStruct
+  include Helium::Struct
+
+  attribute :email
+  use NameStruct, as: :name_struct
 end
 
 Pry.start
