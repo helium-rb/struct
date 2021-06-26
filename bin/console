@@ -4,6 +4,7 @@ require "bundler/setup"
 require 'byebug'
 require "helium/console"
 require "helium/struct"
+require "helium/struct/hooks"
 
 # You can add fixtures and/or initialization code here to make experimenting
 # with your gem easier. You can also use a different console, if you like.
@@ -11,6 +12,7 @@ require "helium/struct"
 # (If you use this, don't forget to add pry to your Gemfile!)
 class NameStruct
   include Helium::Struct
+  include Helium::Struct::Hooks
 
   attribute :name
   attribute :name_caps
@@ -28,7 +30,7 @@ class UserStruct
   include Helium::Struct
 
   attribute :email
-  use NameStruct, as: :name_struct
+  # use NameStruct, as: :name_struct
 end
 
 Pry.start

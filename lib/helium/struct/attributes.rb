@@ -8,9 +8,7 @@ module Helium
         mod.singleton_class.include(ClassMethods)
 
         mod.dependency :attributes do
-          mod.schema
-            .map {|key, attribute| [key, attribute.build_value(self)] }
-            .to_h
+          mod.schema.transform_values { |key, _| self.class.value_class.new }
         end
       end
 
@@ -27,12 +25,26 @@ module Helium
       end
 
       module ClassMethods
+        def attribute_class
+          return @attribute_class if defined? @attribute_class
+
+          base = superclass.respond_to?(:attribute_class) ? superclass.attribute_class : Attribute
+          @attribute_class ||= Class.new(base)
+        end
+
+        def value_class
+          return @value_class if defined? @value_class
+
+          base = superclass.respond_to?(:value_class) ? superclass.value_class : Value
+          @value_class ||= Class.new(base)
+        end
+
         def attributes
           schema.keys
         end
 
         def attribute(name, **opts, &block)
-          schema[name] = Attribute.new(**opts)
+          schema[name] = attribute_class.new(**opts)
 
           define_method name do
             attributes[name].value
