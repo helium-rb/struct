@@ -5,6 +5,7 @@ require 'byebug'
 require "helium/console"
 require "helium/struct"
 require "helium/struct/hooks"
+require "helium/struct/use"
 
 # You can add fixtures and/or initialization code here to make experimenting
 # with your gem easier. You can also use a different console, if you like.
@@ -20,17 +21,17 @@ class NameStruct
   on_change(:name) do |value|
     self.name_caps = value&.upcase
   end
-
-  on_change(:name_caps) do |value|
-    self.name = value&.downcase
-  end
 end
 
 class UserStruct
   include Helium::Struct
+  include Helium::Struct::Undefined
+  include Helium::Struct::Hooks
+  include Helium::Struct::Use
+
 
   attribute :email
-  # use NameStruct, as: :name_struct
+  use NameStruct, as: :name_struct
 end
 
 Pry.start

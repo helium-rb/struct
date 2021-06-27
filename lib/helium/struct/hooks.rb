@@ -20,12 +20,14 @@ module Helium
           hooks[name] << block
         end
 
-        def build_value(*)
+        def process_value(value:, form:)
           value = super
-          byebug
+          return value unless value.respond_to?(:register_hook)
+          
           hooks.each do |type, hooks|
             hooks.each { |hook| value.register_hook(type, form, &hook) }
           end
+
           value
         end
 

@@ -4,11 +4,7 @@ module Helium
   module Struct
     class Value
       def initialize
-        @value = Undefined.instance
-      end
-
-      def undefined?
-        @value.is_a? Undefined
+        clear!
       end
 
       def value
@@ -16,11 +12,27 @@ module Helium
       end
 
       def clear!
-        self.value = Undefined.instance
+        self.value = nil
       end
 
       def value=(new_value)
         @value = new_value
+      end
+
+      def inspect
+        value.inspect
+      end
+
+      def to_format
+        value
+      end
+
+      if defined? Helium::Console
+        Helium::Console.define_formatter_for self do
+          def call
+            format(object.to_format)
+          end
+        end
       end
     end
   end

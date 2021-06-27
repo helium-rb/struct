@@ -1,19 +1,24 @@
-require "helium/struct/undefined"
 require "helium/struct/attribute"
+require "helium/struct/value"
 
 module Helium
   module Struct
     module Attributes
       def self.included(mod)
-        mod.singleton_class.include(ClassMethods)
+        mod.extend(ClassMethods)
+      end
 
-        mod.dependency :attributes do
-          mod.schema.transform_values { |key, _| self.class.value_class.new }
+      def initialize(values: nil, **)
+        @values = values || self.class.schema.transform_values { |key, _| self.class.value_class.new }
+
+        self.class.schema.each do |name, attribute|
+          attribute.process_value(value: @values[name], form: self)
         end
+
       end
 
       def undefined?(attr_name)
-        attributes[attr_name].undefined?
+        values[attr_name].undefined?
       end
 
       def defined?(attr_name)
@@ -21,8 +26,20 @@ module Helium
       end
 
       def delete(attr_name)
-        attributes[attr_name].clear!
+        values[attr_name].clear!
       end
+
+      def [](name)
+        values[name].value
+      end
+
+      def []=(name, value)
+        values[name].value = value
+      end
+
+    private
+
+      attr_reader :values
 
       module ClassMethods
         def attribute_class
@@ -47,11 +64,11 @@ module Helium
           schema[name] = attribute_class.new(**opts)
 
           define_method name do
-            attributes[name].value
+            self[name]
           end
 
           define_method "#{name}=" do |value|
-            attributes[name].value = value
+            self[name] = value
           end
 
           name
