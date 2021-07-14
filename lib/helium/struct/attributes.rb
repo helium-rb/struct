@@ -1,28 +1,28 @@
+require "helium/dependency"
+require "helium/initialization"
 require "helium/struct/attribute"
 require "helium/struct/value"
+
 
 module Helium
   module Struct
     module Attributes
       def self.included(mod)
-        mod.extend(ClassMethods)
-      end
+        mod.class_eval do
+          include Initialization
+          include Dependency
+          extend ClassMethods
 
-      def initialize(values: nil, **)
-        @values = values || self.class.schema.transform_values { |key, _| self.class.value_class.new }
+          dependency(:values) { Hash.new }
+          dependency(:value_class) { self.class.value_class }
 
-        self.class.schema.each do |name, attribute|
-          attribute.process_value(value: @values[name], form: self)
+          before_initialize do
+            self.class.schema.each do |name, attribute|
+              value = values[name] ||= value_class.new
+              attribute.process_value(value: value, form: self)
+            end
+          end
         end
-
-      end
-
-      def undefined?(attr_name)
-        values[attr_name].undefined?
-      end
-
-      def defined?(attr_name)
-        !undefined?(attr_name)
       end
 
       def delete(attr_name)
@@ -38,8 +38,6 @@ module Helium
       end
 
     private
-
-      attr_reader :values
 
       module ClassMethods
         def attribute_class

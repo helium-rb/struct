@@ -1,17 +1,11 @@
 require "helium/console" rescue :optional_dependency
 require "helium/struct/version"
-# require "helium/struct/use"
 require "helium/struct/attributes"
-require "helium/struct/value"
-
 
 module Helium
   module Struct
     def self.included(mod)
-      # mod.include Initialization
-
       mod.include Attributes
-      # mod.include Hooks
     end
 
 

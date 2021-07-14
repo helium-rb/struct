@@ -3,16 +3,14 @@ module Helium
     module Use
       def self.included(mod)
         mod.extend(ClassMethods)
-      end
 
-      def initialize(**)
-        super
+        mod.before_initialize do
+          @used_structs = {}
+          self.class.used_structs.each do |struct_class, opts|
+            instance = struct_class.new(values: values)
 
-        @used_structs = {}
-        self.class.used_structs.each do |struct_class, opts|
-          instance = struct_class.new(values: values)
-
-          @used_structs[opts[:as]] = instance
+            @used_structs[opts[:as]] = instance
+          end
         end
       end
 
