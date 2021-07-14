@@ -27,7 +27,7 @@ class UserStruct
 
 
   attribute :email
-  use NameStruct, as: :name_struct
+  use NameStruct, as: :name_struct, map: { name_caps: nil, name: :full_name }, prefix: :user
 end
 
 Pry.start

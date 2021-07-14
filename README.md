@@ -94,11 +94,11 @@ class SimpleProfile
   attribute :username
   attribute :email
 
-  on_change(:email) { |value| self.username = generate_username(value) }
+  on_change(:email) { |email| self.username = generate_username(email) }
 
   private
 
-  def generate_username(value)
+  def generate_username(email)
     ...
   end
 end
@@ -121,6 +121,46 @@ fu.simple_user
 # | name: undefined
 # | email: "stan@klajn.com"
 ```
+
+By default, `use` makes all of the used struct's attributes. This can be better controlled with a `map` option:
+
+```
+class MyStruct
+  include Helium::Struct
+
+  attribute :foo
+  attribute :bar
+end
+
+class MyOtherStruct
+  include Helium::Struct
+
+  use MyStruct, as: :inner_struct, map: { foo: :name, bar: nil }
+end
+
+struct = MyOtherStruct.new
+struct.inner_struct.foo = "James Bond"
+
+struct.name #=> "James Bond"
+```
+
+You can also define prefix to be used for all the attributes:
+```
+class UserAdminPolicy
+  include Helium::Struct
+
+  use User, prefix: :user
+  use User, prefix: :admin
+end
+
+policy = UserAdminPolicy.new
+policy.user_email = "james.007@bond.gov.uk"
+policy.admin_email = "m@mi6.gov.uk"
+```
+
+If given attribute is defined on both parent and child struct, both attribute definitions will be merged together.
+
+Used structs uses their parent features. So if a struct has included `Validation` module and defined a number of validation is used within a struct without `Validation` module, validation will not be available on a child struct.
 
 ## Development
 

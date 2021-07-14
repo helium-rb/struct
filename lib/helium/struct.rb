@@ -6,6 +6,7 @@ module Helium
   module Struct
     def self.included(mod)
       mod.include Attributes
+      mod.include Use
     end
 
 
