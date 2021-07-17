@@ -1,3 +1,4 @@
+
 module Helium
   module Struct
     module Hooks
@@ -23,7 +24,7 @@ module Helium
         def process_value(value:, form:)
           value = super
           return value unless value.respond_to?(:register_hook)
-          
+
           hooks.each do |type, hooks|
             hooks.each { |hook| value.register_hook(type, form, &hook) }
           end

@@ -11,11 +11,11 @@ class NameStruct
   include Helium::Struct
   include Helium::Struct::Hooks
 
-  attribute :name
-  attribute :name_caps
+  attribute :full_name
+  attribute :full_name_caps
 
-  on_change(:name) do |value|
-    self.name_caps = value&.upcase
+  on_change(:full_name) do |value|
+    self.full_name_caps = value&.upcase
   end
 end
 
@@ -27,7 +27,7 @@ class UserStruct
 
 
   attribute :email
-  use NameStruct, as: :name_struct, map: { name_caps: nil, name: :full_name }, prefix: :user
+  use NameStruct, as: :name_struct, map: { full_name_caps: :name_caps, full_name: :name }, prefix: :user
 end
 
 Pry.start

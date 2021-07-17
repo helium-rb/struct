@@ -2,6 +2,7 @@ require "helium/dependency"
 require "helium/initialization"
 require "helium/struct/attribute"
 require "helium/struct/value"
+require "helium/struct/features"
 
 
 module Helium
@@ -9,8 +10,6 @@ module Helium
     module Attributes
       def self.included(mod)
         mod.class_eval do
-          include Initialization
-          include Dependency
           extend ClassMethods
 
           dependency(:values) { Hash.new }

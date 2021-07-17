@@ -5,8 +5,14 @@ require "helium/struct/attributes"
 module Helium
   module Struct
     def self.included(mod)
-      mod.include Attributes
-      mod.include Use
+      mod.include Features
+
+      mod.feature Initialization
+      mod.feature Dependency
+
+      mod.feature Attributes
+      mod.feature Hooks
+      mod.feature Use
     end
 
 
