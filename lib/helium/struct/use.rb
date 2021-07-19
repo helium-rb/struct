@@ -21,7 +21,7 @@ module Helium
 
       module ClassMethods
         def use(struct_class, **opts)
-          opts[:map] = struct_class.attributes.map { |i| [i, i] }.to_h.merge(opts[:map])
+          opts[:map] = struct_class.attributes.map { |i| [i, i] }.to_h.merge(opts[:map] || {})
           if (prefix = opts.delete(:prefix))
             opts[:map].transform_values! { |name| name && [prefix, name].join('_').to_sym }
           end

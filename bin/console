@@ -4,12 +4,9 @@ require "bundler/setup"
 require 'byebug'
 require "helium/console"
 require "helium/struct"
-require "helium/struct/hooks"
-require "helium/struct/use"
 
-class NameStruct
+class Name
   include Helium::Struct
-  include Helium::Struct::Hooks
 
   attribute :full_name
   attribute :full_name_caps
@@ -19,15 +16,25 @@ class NameStruct
   end
 end
 
-class UserStruct
+class Address
+  include Helium::Struct
+
+  attribute :lines
+  attribute :postcode
+  attribute :town
+end
+
+class User
   include Helium::Struct
   include Helium::Struct::Undefined
-  include Helium::Struct::Hooks
-  include Helium::Struct::Use
-
 
   attribute :email
-  use NameStruct, as: :name_struct, map: { full_name_caps: :name_caps, full_name: :name }, prefix: :user
+  use Name, as: :name_struct, map: { full_name_caps: :name_caps, full_name: :name }
+
+  nested :addresses, collection: true do
+    attribute :name
+    use Address
+  end
 end
 
 Pry.start

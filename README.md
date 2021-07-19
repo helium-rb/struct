@@ -35,33 +35,6 @@ user.name = "Stan Klajn"
 user.name #=> "Stan Klajn"
 ```
 
-### Undefined values
-
-Structs make a distinction between `undefined` and `nil` values.
-
-```
-u = User.new
-#=>
-# # User struct
-# |  name: undefined
-# | email: undefined
-```
-
-However, due to Ruby's limitation, `undefine` can only be internal implementation detail as it would be treated as true in all the conditionals. Struct will still return nil when you query an udnefined value:
-
-```
-u.name #=> nil
-```
-
-You can however test if given attribute is defined with:
-```
-u.defined?(:name) #=> false
-u.name = nil
-u.defined?(:name) #=> true
-u.delete(:name)
-u.defined?(:name) #=> false
-```
-
 ### Hooks
 
 Do not override your struct setters - use change hooks instead!
@@ -135,7 +108,7 @@ end
 class MyOtherStruct
   include Helium::Struct
 
-  use MyStruct, as: :inner_struct, map: { foo: :name, bar: nil }
+  use MyStruct, as: :inner_struct, map: { foo: :name, bar: false }
 end
 
 struct = MyOtherStruct.new
@@ -160,7 +133,81 @@ policy.admin_email = "m@mi6.gov.uk"
 
 If given attribute is defined on both parent and child struct, both attribute definitions will be merged together.
 
-Used structs uses their parent features. So if a struct has included `Validation` module and defined a number of validation is used within a struct without `Validation` module, validation will not be available on a child struct.
+The behaviour of the struct is controlled by a parent struct. If used struct includes some features that parent struct did not declare, they will be simply ignored.
+
+### Nesting
+
+Structs can nest other structs:
+
+```
+class Address
+  include Helium::Struct
+
+  attribute :lines
+  attribute :postcode
+  attribute :town
+end
+
+class Order
+  include Helium::Struct
+
+  attribute :order_number
+  nested :shipping_address, Address
+  nested :billing_address, Address
+end
+
+order = Order.new
+order.shipping_address.postcode = "NW11 0PE"
+```
+
+By default, the nested singular struct is always present.
+
+You can also define collections of nested structs and/or use block to define the new struct. All the struct goodies are available within the block:
+
+```
+class UserProfile
+  include Helium::Struct
+
+  attribute :email
+  nested :addresses, collection: true do
+    attribute :refernce_name
+
+    use Address
+  end
+end
+
+profile = UserProfile.new
+address = profile.addresses.build
+address.reference_name = "Home"
+address.postcode = "Some postcode"
+```
+
+### Undefined values
+
+Structs make a distinction between `undefined` and `nil` values.
+
+```
+u = User.new
+#=>
+# # User struct
+# |  name: undefined
+# | email: undefined
+```
+
+However, due to Ruby's limitation, `undefine` can only be internal implementation detail as it would be treated as true in all the conditionals. Struct will still return nil when you query an udnefined value:
+
+```
+u.name #=> nil
+```
+
+You can however test if given attribute is defined with:
+```
+u.defined?(:name) #=> false
+u.name = nil
+u.defined?(:name) #=> true
+u.delete(:name)
+u.defined?(:name) #=> false
+```
 
 ## Development
 
