@@ -15,9 +15,11 @@ module Helium
             end
 
             name = options.fetch :name, object.respond_to?(:struct_name, true) ? object.send(:struct_name) : object.class.name
-            [ ("# #{light_yellow name}" if name),
-              format(table)
-            ].compact.join($/)
+
+            yield_lines do |y|
+              y << "# #{light_yellow name}" if name
+              format(table).lines.each { |line| y << line }
+            end
           end
         end
       end

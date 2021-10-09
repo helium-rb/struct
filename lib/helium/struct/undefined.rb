@@ -24,7 +24,7 @@ module Helium
 
         if defined? Helium::Console
           Helium::Console.define_formatter_for self do
-            def call
+            def render_compact
               light_black("undefined")
             end
           end

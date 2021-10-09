@@ -5,5 +5,5 @@ gemspec
 
 gem "rake", "~> 12.0"
 gem "rspec", "~> 3.0"
-gem "helium-console"
+gem "helium-console", "~> 0.1.12"
 gem "byebug"

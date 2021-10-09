@@ -23,7 +23,7 @@ module Helium
 
         if defined? Helium::Console
           Helium::Console.define_formatter_for self do
-            def call
+            def render_partial
               format object.instance_variable_get(:@struct)
             end
           end

@@ -41,8 +41,7 @@ module Helium
 
         if defined? Helium::Console
           Helium::Console.define_formatter_for self do
-            def call
-              object.indexed_structs
+            def render_partial
               struct_name = object.instance_variable_get(:@struct_name)
 
               if object.indexed_structs.none?
@@ -53,14 +52,14 @@ module Helium
                 ].compact.join(" ")
               end
 
-              formatted = object.indexed_structs
-                .flat_map { |key, object| ["# #{light_black("[#{key.to_s}]")}", format(object, name: false)] }
-                .join($/)
+              yield_lines do |y|
+                y << "# #{light_yellow(struct_name)}" if options.fetch(:name, true)
 
-              [
-                ("# #{light_yellow(struct_name)}" if options.fetch(:name, true)),
-                formatted
-              ].compact.join($/)
+                object.indexed_structs.each do |key, object|
+                  y << "# #{light_black("[#{key.to_s}]")}"
+                  format(object, name: false).lines.each { |line| y << line }
+                end
+              end
             end
           end
         end
